@@ -1,16 +1,50 @@
-import pickle
-
 import os
+import pickle
 import re
+
 import numpy as np
 import pandas as pd
+from icecream import ic
 from torch.utils.data import DataLoader, Dataset
 
 # 35 attributes which contains enough non-values
-attributes = ['DiasABP', 'HR', 'Na', 'Lactate', 'NIDiasABP', 'PaO2', 'WBC', 'pH', 'Albumin', 'ALT', 'Glucose', 'SaO2',
-              'Temp', 'AST', 'Bilirubin', 'HCO3', 'BUN', 'RespRate', 'Mg', 'HCT', 'SysABP', 'FiO2', 'K', 'GCS',
-              'Cholesterol', 'NISysABP', 'TroponinT', 'MAP', 'TroponinI', 'PaCO2', 'Platelets', 'Urine', 'NIMAP',
-              'Creatinine', 'ALP']
+attributes = [
+    "DiasABP",
+    "HR",
+    "Na",
+    "Lactate",
+    "NIDiasABP",
+    "PaO2",
+    "WBC",
+    "pH",
+    "Albumin",
+    "ALT",
+    "Glucose",
+    "SaO2",
+    "Temp",
+    "AST",
+    "Bilirubin",
+    "HCO3",
+    "BUN",
+    "RespRate",
+    "Mg",
+    "HCT",
+    "SysABP",
+    "FiO2",
+    "K",
+    "GCS",
+    "Cholesterol",
+    "NISysABP",
+    "TroponinT",
+    "MAP",
+    "TroponinI",
+    "PaCO2",
+    "Platelets",
+    "Urine",
+    "NIMAP",
+    "Creatinine",
+    "ALP",
+]
 
 
 def extract_hour(x):
@@ -142,7 +176,6 @@ class Physio_Dataset(Dataset):
 
 
 def get_dataloader(seed=1, nfold=None, batch_size=16, missing_ratio=0.1):
-
     # only to obtain total length of dataset
     dataset = Physio_Dataset(missing_ratio=missing_ratio, seed=seed)
     indlist = np.arange(len(dataset))

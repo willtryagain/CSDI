@@ -1,8 +1,9 @@
+import pickle
+
 import numpy as np
 import torch
 from torch.optim import Adam
 from tqdm import tqdm
-import pickle
 
 
 def train(
@@ -30,7 +31,6 @@ def train(
         with tqdm(train_loader, mininterval=5.0, maxinterval=50.0) as it:
             for batch_no, train_batch in enumerate(it, start=1):
                 optimizer.zero_grad()
-
                 loss = model(train_batch)
                 loss.backward()
                 avg_loss += loss.item()
@@ -99,7 +99,7 @@ def calc_quantile_CRPS(target, forecast, eval_points, mean_scaler, scaler):
 
 
 def evaluate(model, test_loader, nsample=100, scaler=1, mean_scaler=0, foldername=""):
-
+    print("evaluating...")
     with torch.no_grad():
         model.eval()
         mse_total = 0
@@ -113,7 +113,9 @@ def evaluate(model, test_loader, nsample=100, scaler=1, mean_scaler=0, foldernam
         all_generated_samples = []
         with tqdm(test_loader, mininterval=5.0, maxinterval=50.0) as it:
             for batch_no, test_batch in enumerate(it, start=1):
+                print("batch_no: ", batch_no)
                 output = model.evaluate(test_batch, nsample)
+                print("forward pass done")
 
                 samples, c_target, eval_points, observed_points, observed_time = output
                 samples = samples.permute(0, 1, 3, 2)  # (B,nsample,L,K)
@@ -130,10 +132,11 @@ def evaluate(model, test_loader, nsample=100, scaler=1, mean_scaler=0, foldernam
 
                 mse_current = (
                     ((samples_median.values - c_target) * eval_points) ** 2
-                ) * (scaler ** 2)
+                ) * (scaler**2)
                 mae_current = (
-                    torch.abs((samples_median.values - c_target) * eval_points) 
+                    torch.abs((samples_median.values - c_target) * eval_points)
                 ) * scaler
+                print("mse_current: ", mse_current)
 
                 mse_total += mse_current.sum().item()
                 mae_total += mae_current.sum().item()
@@ -174,9 +177,7 @@ def evaluate(model, test_loader, nsample=100, scaler=1, mean_scaler=0, foldernam
                 all_target, all_generated_samples, all_evalpoint, mean_scaler, scaler
             )
 
-            with open(
-                foldername + "/result_nsample" + str(nsample) + ".pk", "wb"
-            ) as f:
+            with open(foldername + "/result_nsample" + str(nsample) + ".pk", "wb") as f:
                 pickle.dump(
                     [
                         np.sqrt(mse_total / evalpoints_total),
